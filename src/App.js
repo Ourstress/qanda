@@ -20,6 +20,7 @@ export default function App() {
   const [authStatus, setAuthStatus] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [reply, setReply] = useState("");
+  const [user, setUser] = useState({ displayName: "", photoURL: "" });
 
   useEffect(() => {
     const getDataDoc = (collection, doc, useState) => {
@@ -84,6 +85,20 @@ export default function App() {
     getCollectionDataPushArray("Questions");
   }, []);
 
+  const loginHandler = () =>
+    Firebase.auth
+      .signInWithPopup(Firebase.googleProvider)
+      .then(function(result) {
+        // The signed-in user info.
+        const user = result.user;
+        if (user) {
+          setUser({ displayName: user.displayName, photoURL: user.photoURL });
+        }
+      })
+      .catch(function(error) {
+        // Handle Errors here.
+        console.log(error);
+      });
   return (
     <div>
       <AppBar position="static" color="default">
@@ -92,11 +107,21 @@ export default function App() {
             {siteInfo.Title}
           </Typography>
           {authStatus ? (
-            <IconButton color="inherit" onClick={() => setAuthStatus(false)}>
-              <Typography>LOG OUT</Typography>
-            </IconButton>
+            <div>
+              <Typography variant="subtitle1">
+                Hello {user.displayName}
+              </Typography>
+              <IconButton color="inherit" onClick={() => setAuthStatus(false)}>
+                <Typography>LOG OUT</Typography>
+              </IconButton>
+            </div>
           ) : (
-            <Button onClick={() => setAuthStatus(true)}>
+            <Button
+              onClick={() => {
+                loginHandler();
+                setAuthStatus(true);
+              }}
+            >
               <Typography>LOGIN</Typography>
             </Button>
           )}

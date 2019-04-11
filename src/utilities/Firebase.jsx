@@ -22,6 +22,7 @@ class Firebase {
     /* Firebase APIs */
 
     this.db = app.firestore();
+    this.auth = app.auth();
 
     /* Social Sign In Method Provider */
 

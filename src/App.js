@@ -65,9 +65,11 @@ export default function App() {
                 ).then(res => {
                   const populatedData = {
                     ...questionData,
-                    replyData: replies
+                    replyData: replies,
+                    docID: doc.id
                   };
                   setQuestions([...questions, populatedData]);
+                  console.log(populatedData);
                 });
               } else {
                 // doc.data() will be undefined in this case
@@ -83,8 +85,30 @@ export default function App() {
 
     getDataDoc("Config", "SiteInfo", setSiteInfo);
     getCollectionDataPushArray("Questions");
+    checkUserLogin();
   }, []);
 
+  const addComment = (reply, questionID) => {
+    Firebase.db
+      .collection("Replies")
+      .add(reply)
+      .then(function(doc) {
+        console.log(doc);
+        console.log("questionID is " + questionID);
+        Firebase.db
+          .collection("Questions")
+          .doc(questionID)
+          .update({
+            Replies: Firebase.firestore.FieldValue.arrayUnion(
+              doc //doc.path // `Replies/${doc.id}`
+            )
+          });
+        console.log("Document successfully written!");
+      })
+      .catch(function(error) {
+        console.error("Error writing document: ", error);
+      });
+  };
   const loginHandler = () =>
     Firebase.auth
       .signInWithPopup(Firebase.googleProvider)
@@ -99,6 +123,15 @@ export default function App() {
         // Handle Errors here.
         console.log(error);
       });
+
+  const checkUserLogin = () => {
+    Firebase.auth.onAuthStateChanged(function(user) {
+      if (user) {
+        setUser({ displayName: user.displayName, photoURL: user.photoURL });
+        setAuthStatus(true);
+      }
+    });
+  };
   return (
     <div>
       <AppBar position="static" color="default">
@@ -111,7 +144,13 @@ export default function App() {
               <Typography variant="subtitle1">
                 Hello {user.displayName}
               </Typography>
-              <IconButton color="inherit" onClick={() => setAuthStatus(false)}>
+              <IconButton
+                color="inherit"
+                onClick={() => {
+                  Firebase.auth.signOut();
+                  setAuthStatus(false);
+                }}
+              >
                 <Typography>LOG OUT</Typography>
               </IconButton>
             </div>
@@ -163,6 +202,7 @@ export default function App() {
                   updatedQuestionContainer[i] = updatedQuestion;
                   setQuestions(updatedQuestionContainer);
                   setReply("");
+                  addComment(replies, question.docID);
                 }}
                 style={{ width: "10vw", alignSelf: "flex-start" }}
               >

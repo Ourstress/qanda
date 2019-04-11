@@ -23,7 +23,7 @@ class Firebase {
 
     this.db = app.firestore();
     this.auth = app.auth();
-
+    this.firestore = app.firestore;
     /* Social Sign In Method Provider */
 
     this.googleProvider = new app.auth.GoogleAuthProvider();

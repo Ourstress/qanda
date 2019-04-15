@@ -71,7 +71,6 @@ export default function App() {
                     docID: doc.id
                   };
                   setQuestions([...questions, populatedData]);
-                  console.log(populatedData);
                 });
               } else {
                 // doc.data() will be undefined in this case
@@ -98,8 +97,6 @@ export default function App() {
       .collection("Replies")
       .add(reply)
       .then(function(doc) {
-        console.log(doc);
-        console.log("questionID is " + questionID);
         Firebase.db
           .collection("Questions")
           .doc(questionID)
@@ -122,6 +119,17 @@ export default function App() {
         const user = result.user;
         if (user) {
           setUser({ displayName: user.displayName, photoURL: user.photoURL });
+          if (result.additionalUserInfo.isNewUser) {
+            Firebase.db
+              .collection("Users")
+              .add({ name: user.displayName })
+              .then(function(doc) {
+                console.log("Document successfully written!");
+              })
+              .catch(function(error) {
+                console.error("Error writing document: ", error);
+              });
+          }
         }
       })
       .catch(function(error) {
@@ -183,7 +191,10 @@ export default function App() {
               </Typography>
               {question.replyData.map(comment => {
                 return (
-                  <Typography style={{ fontStyle: "italic" }}>
+                  <Typography
+                    style={{ fontStyle: "italic" }}
+                    key={comment.Content}
+                  >
                     {comment.Content}
                   </Typography>
                 );

@@ -14,6 +14,8 @@ import TextField from "@material-ui/core/TextField";
 
 import { FirebaseContext } from "./utilities/FirebaseContext";
 
+import ReactGA from "react-ga";
+
 export default function App() {
   const Firebase = useContext(FirebaseContext);
   const [siteInfo, setSiteInfo] = useState({ title: "title" });
@@ -86,6 +88,9 @@ export default function App() {
     getDataDoc("Config", "SiteInfo", setSiteInfo);
     getCollectionDataPushArray("Questions");
     checkUserLogin();
+    // Google Analytics
+    ReactGA.initialize("UA-138345498-1");
+    ReactGA.pageview(window.location.pathname + window.location.search);
   }, []);
 
   const addComment = (reply, questionID) => {
